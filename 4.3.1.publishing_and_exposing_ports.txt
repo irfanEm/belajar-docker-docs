@@ -1,0 +1,19 @@
+Publish port adalah kemampuan untuk sedikit menembus jaringan terisolasi dengan mengatur aturan pengalihan (forwarding rule).
+Format yang digunakan dalam forwarding rule dalam docker adalah = port_host:port_container.
+Contoh : 
+perintah berikut akan meneruskan request yang masuk ke port 8080 dari host ke port 80 dari container.
+kamu bisa mempublish port dengan menggunakan tag -p atau --port saat menjalankan docker run. contoh : 
+
+docker run -d -p 8080:80 nginx
+
+selain itu kita juga bisa untuk tidak memilih port host mana yang akan digunakan untuk forwarding, 
+artinya nantinya Docker yang akan memilihkan port host yang akan digunakan sebagai forwarding.
+untuk melakukan hal ini kita bisa melakukanya dengan menghilangkan konfigurasi port host.
+contoh : 
+
+docker run -p 80 nginx
+
+atau jika kita ingin mempublish semua port yang didefinisikan menggunakan perintah EXPOSE di dalam Dockerfile.
+kita bisa menggunakan tag -P atau --publish-all. contoh : 
+
+docker run -P nginx

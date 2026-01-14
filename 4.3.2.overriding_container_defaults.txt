@@ -1,0 +1,38 @@
+Container docker datang dengan pengaturan default yang umumnya berjalan dengan baik, 
+tapi kita bisa menyesuaikan pengaturan itu agar container berjalan sesuai dengan yang kita inginkan.
+
+perintah 'docker run' menawarkan beberapa cara yang powerfull untuk mengganti (override) pengaturan default
+dan menyesuaikan perilaku dari container seusai yang kita inginkan. 
+Perintah ini menawarkan beberapa flags yang memungkinkan kita untuk mengkustomisasi perilaku container secara langsung.
+
+1. mengubah port networks 
+terkadang mungkin kita ingin memisahkan penggunaan database untuk tujuan testing dan development.
+karena mungkin menjalankan object container database ini pada port yang sama akan mengakibatkan conflict
+kita bisa menggunakan flags -p pada perintah docker run untuk me-mapping port host ke port container kita.
+sehingga kita bisa menjalankan beberapa object container tanpa conflict. contoh : 
+
+docker run -d -p HOST_PORT:CONTAINER_PORT postgres
+
+2. mengatur variable environment
+Kita bisa mengatur variabel environment pada perintah docker run dengan menggunakan flags -e.
+contoh berikut mengatur variable environment dengan key 'foo' dan value 'bar' : 
+
+docker run -e foo=bar postgres env
+
+note : menggunakan file .env lebih enak untuk mengatur variable environment ke container docker kita,
+sehingga kita tidak perlu menumpuk banyak flags -e di perintah docker run kita.
+untuk bisa menggunakan file .env kita bisa menambahkan option --env-file di perintah docker run. contoh : 
+
+docker run --env-file .env postgres env
+
+3. Membatasi konsumsi resource container.
+Kita bisa mengatur / membatasi konsumsi resource dari container dengan menggunakan option --ram dan --cpus
+pada perintah docker run, untuk membatasi penggunaan ram dan cpu dari container yang berjalan.
+contoh : 
+
+docker run -e POSTGRES_PASSWORD=secret --ram="512m" --cpus="0.5" postgres
+
+perintah diatas akan membatasi penggunaan ram dari container ke maximal 512 mb dan cpu di 0,5 core.
+
+untuk memonitoring penggunaan resource secara realtime kita bisa menggunakan perintah docker stats
+perintah ini akan memantu kita untuk memahami apakah resource yang dialikasikan itu mencukupi / butuh penyesuaian.
