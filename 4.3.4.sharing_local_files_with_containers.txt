@@ -1,0 +1,73 @@
+# PENJELASAN
+
+    - Setiap container memiliki apapun yang dia butuhkan untuk dapat berfungsi tanpa bergantung pada dependency pre-installed pada mesin host.
+    - Karena container berjalan di dalam isolasi, dia memiliki pengaruh minimal terhadap mesin host dan container lain.
+    - Isolasi ini memiliki keuntungan utama : container menjadi minim konflik dengan host dan container lain.
+    - Tapi, isolasi ini juga berarti container tidak dapat mengakses data di host secara langsung secara default.
+    - Bayangkan skenario dimana kita memiliki container dari aplikasi web yang harus mengakses seting konfigurasi yang disimpan di file pada system host kita.
+    - File ini bisa berisi data sensitive seperti kredential Database, atau API keys.
+    - Menyimpan informasi sensitive seperti ini secara langsung di dalam image container menimbulkan resiko keamanan, terutama selama berbagi image.
+    - Untuk mengatasi tantangan ini, Docker menawarkan opsi penyimpanan yang menjembatani celah antara isolasi container dan data dari mesin host kita.
+    - Docker menawarkan dua opsi penyimapanan utama untuk mempertahankan data dan berbagi file diantara mesin host dan container : volumes dan bind mounts.
+
+    # Volume VS Bind mounts
+
+        - Jika kita ingin memastikan bahwa data yang dihasilkan atau dimodifikasi di dalam container bertahan meskipun setelah container berhenti berjalan, 
+          kita bisa memilih volume.
+        - Kita bisa melihat materi Persisting Container Data untuk mempelajari lebih lanjut tentang volumes dan use case-nya.
+        - Jika kita memiliki file tertentu atau direktori di system host kita yang ingin kita share secara alngsung dengan container, 
+          seperti file konfigurasi atau kode development, kita bisa menggunakan bind mount.
+        - Ini seperti membuka sebuah portal langsung antara host dan container untuk sharing (berbagi).
+        - Bind Mounts ideal untuk environment development dimana akses file seara realtime dan berbagi antara host dan container sangat krusial.
+
+    # Berbagi file antara host dan container
+
+        - Kedua flag -v(atau --volume) dan --mount digunakan dengan perintah 'docker run' 
+          memungkinkan kita berbagi file atau direktori antara mesin local(host) dan container Docker.
+        - Tapi, terdapat beberapa perbedaan kunci di perilaku dan penggunaanya.
+        - Flag -v itu lebih sederhana dan lebih mudah untuk volume basic atau operasi bind mount. 
+        - Jika lokasi host belum ada ketika menggunakan -v atau --volume, direktori akan secara otomatis dibuatkan.
+        - Bayangkan kita adalah seorang developer yang sedang bekerja pada sebuah project.
+        - kita memiliki direktori source di mesin development dimana code kita berada.
+        - Ketika kita mengcompile atau membuild kode kita, artifact yang dihasilkan (kode yang dicompile, executables, images dll) 
+          akan disimpan di dalam subdirektory terpisah didalam direktory source kita.
+        - Pada contoh berikut, subdirektori  adalah /HOST/PATH.
+        - Sekarang kita ingin artifacts build ini dapat diakses di dalam container docker yang menjalankan aplikasi kita.
+        - Sebagai tambahan, kita ingin container untuk secara otomatis mengakses artifact build terbaru ketika kita me-rebuild code kita.
+        - Berikut adalah cara untuk menggunakan 'docker run' untuk menjalankan container menggunakan bind mount dan memetakanya ke lokasi file container.
+
+            docker run -v /HOST/PATH:/CONTAINER/PATH -it nginx
+
+        - Flag --mount menawarkan fitur yang lebih canggih dan control granular, 
+          membuatnya sesuai untuk skenario mount yang complex atau deployments production.
+        - Jika kamu menggunakan --mount untuk melakukan bind-mount sebuah file atau direktory yang belum ada di host Docker, 
+          perintah 'docker run' tidak akan secara otomatis membuat nya untuk kita, tapi akan menghasilkan error.
+
+            docker run --mount type=bind, source=/HOST/PATH,target=/CONTAINER/PATH,readonly nginx
+
+        - Note : Docker merekomendasikan menggunakan sintax '--mount' daripada '-v'.
+        - Dia menyediakan control yang lebih baik pada proses mounting dan menghindari issue potensial dengan direktory yang hilang.
+
+    # File Permissions untuk Docker mengakses file host.
+
+        - Ketika menggunakan bind mounts, penting untuk memastikan bahwa Docker memiliki ijin yang dibutuhkan untuk mengakses direktory host.
+        - Untuk memberikan akses read/write, kita bisa menggunakan flag ':ro' (read-only) atau flag ':rw' (read-write) 
+          dengan flag -v atau --mount selama membuat container.
+        - Sebagai contoh, perintah berikut akan memberikan ijin akses read-write : 
+
+            docker run -v HOST-DIRECTORY:/CONTAINER-DIRECTORY:rw nginx
+
+        - Mount Bind Read-Only memungkinkan container untuk mengakses file yang di pasangkan (mount) di host untuk dibaca, 
+          tapi dia tidak bisa mengubah atau menghapus file.
+        - Mount Bind read-write memungkinkan container untuk memodifikasi atau menghapus file yang di mount, 
+          dan juga perubahan / penghapusan file in akan tercermin di system host.
+        - Mount bind Read-Only memastikan bahwa file di host, tidak bisa di modifikasi / dihapus oleh container secara tidak sengaja.
+    
+    # Synchronized File share
+
+        - Ketika codebase kita bertambah besar, metode tradisional dari file sharing seperti bind mounts dapat menjadi tidak efisien atau lambat.
+        - Terutama di environment development dimana frekuensi akses ke file itu menjadi sering.
+        - Synchronized file shares meningkatkan performa bind mount dengan memanfaatkan cach synchronized filesystem.
+        - Optimasi ini memastikan bahwa akses file antara host dan virtual mesin(VM) cepat dan efisien.
+
+# COBA PRAKTEK
