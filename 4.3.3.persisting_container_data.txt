@@ -1,0 +1,106 @@
+# PENJELASAN
+    
+    - Volumes adalah sebuah mekanisme penyimpanan yang menyediakan kemampuan untuk 
+      mempertahankan data melampaui siklus hidup dari sebuah container individual.
+    - Kita bisa membayangkan ini seperti sebuah shortcut atau symlink dari dalam container ke luar container.
+    - Sebagai contoh misalkan kita buat volume dengan nama log-data dengan perintah berikut : 
+
+        docker volume create log-data
+
+    - Ketika kita menjalankan container dengan perintah berikut, maka volume tersebut akan di pasangkan(atau dilampirkan) ke container pada '/logs'.
+    
+        docker run -d -p 80:80 -v log-data:/logs docker/welcome-to-docker
+
+    - dari perintah diatas, jika volume log-data belum dibuat, maka secara otomatis akan dibuat oleh docker.
+    - Ketika container berjalan, semua file yang di tulis ke folder '/logs' akan disimpan di volume ini, diluar dari container.
+    - Dan jika kita menghapus container dan menjalankan container baru menggunakan volume yang sama, file ini akan tetap ada disana.
+    - Kita bisa melampirkan volume yang sama ke beberapa container untuk berbagi file antar container.
+    - Ini akan sangat berguna pada skenario seperti agregasi log, data pipelines, atau aplikasi event-driven lain.
+
+    # Mengatur Volumes
+
+    - Volumes memiliki lifecycle mereka sendiri melampaui containers dan dapat bertumbuh menjadi besar sesuai dengan type data dan aplikasi yang kita gunakan.
+    - perintah berikut akan sangat membantu kita untuk mengatur volumes : 
+
+        docker volume ls : mendata (list) semua volume
+        docker volume rm <nama-atau-id-volume> : menghapus volume (hanya jika volume tersebut tidak dilampirkan (attache) ke volume manapun)
+        docker volume prune : menghapus semua volumes yang tidak digunakan (unattached).
+
+# COBA PRAKTIK
+
+    - Download dan install docker desktop jika belum memiliki.
+    - Jalankan sebuah container menggunakan image Postgres dengan perintah berikut : 
+
+        docker run --name=db -e POSTGRES_PASSWORD=secret -d -v postgres_data:/var/lib/postgresql postgres:18
+
+    - Dari perintah diatas, maka akan menjalankan database di background, dan mengkonfigurasikanya dengan password, 
+      melampirkan volume ke direktory PostgreSQL yang akan mempertahankan file database.
+    - Selanjutnya hubungkan database dengan menggunakan perintah berikut : 
+
+        docker exect -ti db psql -U postgres
+
+    - Selanjutnya pada Command Line Postgres, jalankan perintah berikut untuk membuat table database dan menginputkan 2 record data : 
+
+        CREATE TABLE tasks (
+            id SERIAL PRIMARY KEY,
+            description VARCHAR(100)
+        );
+        INSERT INTO tasks (description) VALUES ('Finish work'), ('Have fun');
+
+    - Lalu pastikan data, dengan menjalankan perintah berikut di CommandLine Postgres : 
+
+        SELECT * FROM tasks;
+
+    - Dan seharusnya kita bisa melihat output sbb : 
+
+         id | description
+        ----+-------------
+          1 | Finish work
+          2 | Have fun
+        (2 rows)
+    
+    - Selanjutnya hentikan dan hapus container database. Ingat bahwa walalupun container telah dihapus, data telah di pertahankan di volume postgres_data.
+
+        docker stop db
+        docker rm db
+
+    - Selanjutnya jalankan container baru dengan perintah berikut, dengan melampirkan volume yang sama dengan data yang dipertahankan : 
+
+        docker run --name=new-db -d -v postgres_data=/var/libs/postgresql postgres:18
+
+    - Kita mungkin sadar bahwa variable environment POSTGRES_PASSWORD telah dibuang.
+    - Itu karena variabel ini hanya digunakan ketika database baru di bootstrap.
+    - selanjutnya pastikan database tetap memiliki records dengan menjalankan perintah berikut : 
+
+        docker exec -ti new_db psql -U postgres -c "SELECT * FROM tasks"
+
+    # Melihat Content Volumes
+    
+    - Dashboard docker desktop menyediakan kemampuan untuk melihat content dari tiap container,
+      dan juga kemampuan untuk meng-export, import, dan juga meng-clone volumes.
+    - Buka dashboard docker desktop dan arahkan ke view 'Volumes'. di View ini harusnya kita akan melihat volume postgres_data.
+    - Pilih nama volume postgres_data.
+    - Pada tab Data akan menampilkan content dari volume dan menyediakan kemampuan untuk mengarahkan file. 
+      double klik pada file akan memungkinkan kita untuk melihat content dan membuat perubahan.
+    - Klik kanan pada file manapun untuk menyimpanya atau menghapusnya.
+
+    # Menghapus container
+
+    - Sebelum menghapus sebuah volume, dia tidak boleh dilampirkan / dipasangkan pada container manapun.
+    - Jika kita belum pernah menghapus volume sebelumnya, kita bisa mengikuti command berikut 
+      (-f pada perintah akan menghentikan container terlebih dahulu baru menghapus volume) : 
+
+        docker rm -f new-db
+
+    - Terdapat beberapa metode untuk menghapus container, termasuk berikut ini : 
+
+        - Pilih opsi 'Delete Volume' pada sebuah volume di Dashoard Docker Desktop.
+        - Gunakan perintah 'docker volume rm' : 
+
+            docker volume rm postgres_data
+
+        - Gunakan perintah 'docker volume prune' untuk menghapus semua volumes yang tidak digunakan.
+
+            docker volume prune
+
+    

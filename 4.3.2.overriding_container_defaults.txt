@@ -59,3 +59,77 @@
     - kia bisa melihatnya dengan menjalankan perintah 'docker ps' / melihatnya di docker desktop.
 
 # MENJALANKAN CONTAINER POSTGRES DALAM JARINGAN TERKONTROL (CONTROLED NETWORK)
+
+    - Secara defualt container secara otomatis terhubung ke jaringan special yang dinamakan bridge network ketika kita menjalankanya.
+    - Bridge network ini bekerja seperti virtual bridge, yang memungkinkan container pada host yang sama untuk saling berkomunikasi
+    - tapi tetap diisolasi dari dunia luar dan host lain.
+    - Ini merupakan titik awal yang baik untuk kebanyakan interaksi container.
+    - Tapi mungkin pada beberapa skenario, kita ingin control lebih terhadap konfigurasi network container.
+    - Dan disinilah peran custom network datang.
+    - Kita bisa memuat jaringan (network) custom dengan memberikan flag --network bersama perintah 'docker run'.
+    - Semua container tanpa flag --network akan di lampirkan ke bridge network default.
+    - baik lakukan langkah ini untuk melihat bagaimana cara menghubungkan container Postgres ke jaringan (network) custom.
+    - Buat sebuah jaringan custom baru dengan menggunakan perintah berikut : 
+
+        docker network create mynetwork
+    
+    - pastikan jaringan tadi dengan menjalankan perintah 
+
+        docker network ls 
+
+    - Perintah tadi akan mendata semua jaringan, termasuk jaringan 'mynetwork' yang baru dibuat.
+    - Selanjutnya hubungkan container Postgres dengan jaringan (network) custom dengan perintah : 
+
+        docker run -d -e POSTGRES_PASSWORD=secret -p 5434:5432 --network mynetwork postgres
+
+    - Dengan perintah diatas, kita menjalankan container postgres di background, yang memetakan port 5434 ke jaringan custom 'mynetwork'.
+    - Saat kita memberikan option --network, kita mengganti jaringan default container dengan menghubungkanya ke jaringan custom Docker
+    untuk isolasi dan komunikasi dengan container lain yang lebih baik.
+    - Kita juga bisa menggunakan perintah 'docker network inspect' untuk memastikan bahwa container terikat dengan network bridge yang baru.
+    - Kunci perbedaan antara default bridge network dan custom network
+    - Dns Resolution :
+      - Secara default, contianer dikoneksikan ke bridge network dafault yang dapat berkomunikasi dengan yang lainya tapi melalui IP address. 
+      - Tapi ini tidak direkomendasikan untuk penggunaan production karena berbagai macam kekurangan teknis. 
+      - Di jaringan custom (custom network)  container dapat meresolve satu dengan yang lainya dengan nama / alias.
+    - Isolation : 
+      - Semua containers yang tidak ditentukan --network-nya akan secara defualt di kaitkan / lampirkan ke bridge network default, 
+      - hal ini dapat menjadi resiko, karena containers yang tidak terkait nantinya juga dapat ikut berkomunikasi. 
+      - Menggunakan custom network akan menyediakan jaringan yang dibatasi, yang mana hanya container yang di lampirkan /kaitkan ke network(jaringan) tersebut 
+      - yang dapat berkomunikasi satu sama lain, hal ini menyediakan isolasi yang lebih baik.
+
+# MENGGANTI CMD & ENTRYPOINT DEFAULT DOCKER COMPOSE
+
+    - Terkadang mungkin kita harus mengganti command (CMD) atau entrypoint(ENTRYPOINT) default yan didefinisikan di Docker image.
+    - Terutama ketika kita menggunakan docker compose.
+    - Contoh, misalkan kita punya file compose.yml sebagai berikut : 
+
+        services: 
+          postgres: 
+            image: postgres:18
+            entrypoint: ["docker-entrypoint.sh", "postgres"]
+            command: ["-h", "localhost", "-p", "5432"]
+            environment:
+              POSTGRES_PASSWORD: secret
+
+    - File compose diatas akan mendefinisikan sebuah layanan dengan nama postgres, yang menggunakan image Postgres official
+    - mengatur script entrypoint, dan menjalankan container dengan password authentikasi.
+    - setelah kita punya file compose seperti diatas, jalankan container dengan menjalankan perintah : 
+
+        docker compose up -dafault
+
+    - perintah diatas akan menjalankan layanan Postfres yang di definisikan di file compose tadi.
+    - selanjutnya buka docker desktop / CLI lalu pilih container Postgres dan pilih exec untuk  masuk ke shell container Postgres.
+    - misal untuk terhubung ke database Postgres keitkan perintah berikut : 
+
+        psql -U postgres
+
+    - note : image Postgres akan mengatur authentikasi terpercaya secara local 
+    - sehingga mungkin kita sadar bahwa password tidak diminta ketika kita menghubungkan dari localhost (didalam container yang sama).
+    - akan tetapi password akan diminta jika kita menghubungkan dari host / container lain.
+    - Selanjutnya untuk mengganti CMD / ENTRYPOINT default dengan perintah docker run.
+    - Kita bisa mengganti defaultnya secara langsung menggunakan perintah docker run, dengan perintah berikut : 
+
+        docker run -d -e POSTGRES_PASSWORD=secret postgres docker-entrypoint.sh -h localhost -p 5432
+
+    - Perintah diatas akan menjalankan container Postgres, mengatur environment variable, dan mengganti perintah startup default
+    - dan mengkonfigurasi hostname dan pemetaan port.
