@@ -70,4 +70,71 @@
         - Synchronized file shares meningkatkan performa bind mount dengan memanfaatkan cach synchronized filesystem.
         - Optimasi ini memastikan bahwa akses file antara host dan virtual mesin(VM) cepat dan efisien.
 
-# COBA PRAKTEK
+# COBA 
+
+  - Download docker desktop jika belum ada.
+  - Jalankan container dengan menggunakan image httpd dengan perintah berikut : 
+
+      docker run -d -p 8080:80 --name my_site httpd:2.4
+
+  - Ini akan menjalankan layanan httpd di background dan mempublish webpage ke port 8080 di host (pc /laptop Kita).
+  - Buka browser dan akses http://localhost:8080 atau gunakan perintah curl untuk memastikan bahwa container berjalan denan baik / tidak.
+
+      curl localhost:8080
+
+  # Gunakan Bind Mount
+
+    - Menggunakan bind mount, kita bisa memetakan file konfigurasi di host komputer kita ke lokasi tertentu di dalam container.
+    - Pada contoh ini, kita kaan melihat bagaimana untuk merubah tampilan dan suasan dari webpage dengan menggunakan bind mount : 
+      1. Hapus container yang tadi dibuat menggunakan Dashboard Docker Deskto / CLI.
+      2. Buat direktory baru dengan nama public_html di system host (pc) kita, dan uat file dengan nama index.html, dengan isi sebagai berikut: 
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <title> My Website with a Whale & Docker!</title>
+        </head>
+        <body>
+        <h1>Whalecome!!</h1>
+        <p>Look! There's a friendly whale greeting you!</p>
+        <pre id="docker-art">
+          ##         .
+          ## ## ##        ==
+        ## ## ## ## ##    ===
+        /"""""""""""""""""\___/ ===
+        {                       /  ===-
+        \______ O           __/
+        \    \         __/
+        \____\_______/
+
+        Hello from Docker!
+        </pre>
+        </body>
+        </html>
+
+      3. Basic HTML ini akan membuat se uah webpage sederhana yang memnyambut kita dengan paus yang ramah.
+      4. Waktunya menjalankan container. 
+      5. Flag --mount dan -v akan menghasilkan hasil yang sama, tapi kita tidak bisa menggunakan keduanya secara bersamaan. contoh : 
+
+          docker run -d -p --name my_site -v .:/usr/local/apache2/htdocs/ httpd:2.4
+
+      6. Ketika semua sudah hidup dan berjalan, harusnya kita akan bsia mengakses situs melalui http://localhost:8080 
+         dan menemukan webpage baru yang menyambut kita denan paus yang ramah.
+      Tips: Ketika menggunakan -v atau --mount di PowerShell Windows, kita harus menyediakan path asolute ke direktory kita daripada hanya './'.
+      Ini karena PowerShell menangani path relative berbeda dengan bash(biasanya digunakan di Mac dan Linux environment).
+
+  # Mengakses File di Dashboard Docker desktop
+
+    - Kita bisa melihat file yang dipasangkan di dalam container dengan memilih tab 'File' container dan kemudian memilih file didalam direktori
+      'usr/local/apache2/htdocs/' .Selanjutnya buka file editor.
+    - Hapus file yang ada di host (pc kita) dan pastikan bahwa file yang dicontainer juga terhapus.
+    - dan kita akan menemukan bahwa file sudah tidak ada lagi di tab 'Files' di Dashboard Docker desktop.
+    - Buat ulang fil eHTML di system host kita dan lihat bahwa file akan kembali muncul di tab "Files" di containers pada Dashboard Docker desktop.
+    - Dan kita juga bisa mengakses kembali situsnya.
+
+  # Menghentikan Container
+
+    - Container akan terus berjalan sampai kita menghentikanya.
+    - Untuk menghentikanya, buka view Containers di Dashboard Docker desktop
+    - Pilih container yang ingin kita hentikan
+    - dan pilih action Stop di kolom actions.
