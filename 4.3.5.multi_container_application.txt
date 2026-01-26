@@ -1,0 +1,50 @@
+# PENJELASAN
+
+    - Menjalankan aplikasi single-container itu mudah.
+    - Sebagai contoh, sebuah script phyton yang menjalankan tugas pemrosesan data tertentu yang berjalan didalam 
+      container dengan semua dependency-nya.
+    - Atau contoh lain sebuah aplikasi Node.js yang menyediakan website static, dengan endpoint API kecil yang bisa
+      secara efektif dikontainerisasi dengan semua libraries dan dependency-nya.
+    - Tapi ketika aplikasi bertambah besar, mengatur mereka sebagai individual container akan menjadi lebih sulit.
+
+    - Bayangkan script pemrosesan data Python kini harus terhubung ke sebuah database.
+    - Tiba tiba kini kita harus mengatur bukan hanya script python tapi juga server database di dalam container yang sama.
+    - Jika script python juga membutuhkan authentikasi login, kita juga membutuhkan mekanisme login, yang akan lebih
+      membengkakan ukuran container.
+
+    - Salah satu best practice dari container adalah bahwa setiap container harus melakukan satu hal dengan baik.
+    - Meskipun terdapat pengecualian untuk aturan ini, tapi hindari kecenderungan memiliki satu container 
+      yang melakukan banyak hal.
+
+    - Mungkin sekarang kita akan bertanya, "haruskah saya menjalankan mereka(container) secara terpisah ?
+      dan jika kita menjalankan mereka secara terpisah, bagaimana kita bisa menghubungkan mereka semua ?
+
+    - Meskipun 'docker run' merupakan alat yang mudah / nyaman untuk menghidupkan container, 
+    - tapi akan menjadi sulit untuk mengatur stack aplikasi yang berkembang bersamanya. berikut alasanya :
+        1. Bayangkan menjalankan beberapa perintah 'docker run' (frontend, backend, database) dengan konfigurasi 
+           yang berbeda untuk environment development, testing dan production. ini akan menimbulkan error dan memakan waktu.
+
+        2. Aplikasi seringkali bergantung pada satu sama lain, memulai container secara manual untuk tujuan tertentu dan 
+           mengatur koneksi jaringan akan menjadi sulit saat stack-nya berkembang.
+
+        3. Setiap aplikasi membutuhkan perintah 'docker run' -nya, membuat nya sulit untuk men-skalasi layanan individualnya.
+           menskalasi seluruh aplikasi artinya berpotensi membuang buang sumber daya pada component yang tidak butuh di boost.
+
+        4. Mempertahankan data untuk setiap aplikasi membutuhkan volume mounts terpisah atau konfigurasi didalam setiap
+           perintah 'docker run'. Ini akan menciptakan pendekatan management data yang tercerai berai. 
+
+        5. Mengatur variabel environment untuk setiap aplikasi melalui perintah 'docker run' itu membosankan 
+           dan dapat menimbulkan error.
+
+    - Disinilah docker compose datang untuk menolong.
+    - Docker Compose mendefinisikan semua aplikasi multi-container kita dalam sebuah file YAML tunggal yang disebut 'compose.yml'.
+    - File ini menetukan konfigurasi untuk seluruh aplikasi kita, dependencies-nya, variabel environment-nya dan bahkan volumes
+      networknya.
+    - Dengan Docker Compose : 
+        1. Kita tidak perlu menjalankan banyak perintah 'docker run'. yang hanya harus kita lakukan adalah mendefinisikan
+           keseluruhan aplikasi multi-container kita dalam sebuah file YAML tunggal. Ini memusatkan konfigurasi dan menyederhanakan 
+           management.
+
+        2. Kita dapat menjalankan container dalam urutan tertentu dan mengelola koneksi jaringan dengan mudah.
+
+        3. 
