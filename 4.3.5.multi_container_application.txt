@@ -47,4 +47,12 @@
 
         2. Kita dapat menjalankan container dalam urutan tertentu dan mengelola koneksi jaringan dengan mudah.
 
-        3. 
+        3. Kita akan dapat dengan mudah menskalasi layanan individual naik atau turun di dalam setup multi-container
+           Hal ini memungkinkan untuk alokasi yang efisien berdasarkan kebutuhan real-time.
+
+        4. Kita dapat mengimplementasikan volume persisten dengan mudah.
+
+        5. Mudah untuk mengatur variabel environment dalam file docker compose.
+
+    - Dengan memanfaatkan Docker Compose untuk menjalankan setup multi-container, kita dapat membuild aplikasi yang complex
+      dengan modularitas, skalabilitas, dan konsistensi pada core-nya.
